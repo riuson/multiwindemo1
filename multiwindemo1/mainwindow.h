@@ -2,11 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QDialog>
 
 namespace Ui {
 class MainWindow;
 }
+
+class DialogsKeeper;
 
 class MainWindow : public QMainWindow
 {
@@ -21,13 +22,12 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    QList<QDialog *> mDialogs;
+    DialogsKeeper *mDialogs;
 
 private slots:
     void on_pushButton_1_clicked();
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
-    void dialog_finished(int result);
 };
 
 #endif // MAINWINDOW_H

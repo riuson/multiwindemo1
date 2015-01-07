@@ -4,12 +4,15 @@
 #include "dialog1.h"
 #include "dialog2.h"
 #include "dialog3.h"
+#include "dialogskeeper.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    this->mDialogs = new DialogsKeeper(this);
 }
 
 MainWindow::~MainWindow()
@@ -19,43 +22,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    qDeleteAll(this->mDialogs);
+    delete this->mDialogs;
 }
 
 void MainWindow::on_pushButton_1_clicked()
 {
     QDialog *dialog = new Dialog1();
-    this->mDialogs.append(dialog);
+    this->mDialogs->addDialog(dialog);
     dialog->setWindowFlags(Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    this->connect(dialog, SIGNAL(finished(int)), SLOT(dialog_finished(int)));
     dialog->show();
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
     QDialog *dialog = new Dialog2();
-    this->mDialogs.append(dialog);
+    this->mDialogs->addDialog(dialog);
     dialog->setWindowFlags(Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    this->connect(dialog, SIGNAL(finished(int)), SLOT(dialog_finished(int)));
     dialog->show();
 }
 
 void MainWindow::on_pushButton_3_clicked()
 {
     QDialog *dialog = new Dialog3();
-    this->mDialogs.append(dialog);
+    this->mDialogs->addDialog(dialog);
     dialog->setWindowFlags(Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    this->connect(dialog, SIGNAL(finished(int)), SLOT(dialog_finished(int)));
     dialog->show();
-}
-
-void MainWindow::dialog_finished(int result)
-{
-    QObject *obj = sender();
-    QDialog *dialog = qobject_cast<QDialog *>(obj);
-
-    if (this->mDialogs.contains(dialog)) {
-        this->mDialogs.removeOne(dialog);
-        delete dialog;
-    }
 }
