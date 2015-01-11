@@ -62,9 +62,11 @@ private slots:
     void newFile();
 #endif
     void updateWindowMenu();
+    void updateWindowToolbar();
     MdiChild *createMdiChild();
 
     void setActiveSubWindow(QWidget *window);
+    void on_subWindowActivated(QMdiSubWindow * window);
 
 private:
    void createActions();
@@ -98,6 +100,8 @@ private:
     QAction *separatorAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
+
+    QToolBar *mBarWindows;
 };
 
 

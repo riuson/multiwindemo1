@@ -45,9 +45,14 @@
 
 MainWindow::MainWindow()
 {
+    this->mBarWindows = new QToolBar("Linker ToolBar", this);
+    this->addToolBar(Qt::BottomToolBarArea, this->mBarWindows);
+
     mdiArea = new QMdiArea;
 
     setCentralWidget(mdiArea);
+
+    this->connect(this->mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(on_subWindowActivated(QMdiSubWindow*)));
 
     windowMapper = new QSignalMapper(this);
     connect(windowMapper, SIGNAL(mapped(QWidget*)),
@@ -65,11 +70,14 @@ void MainWindow::newFile()
     MdiChild *child = createMdiChild();
     child->newFile();
     child->show();
+
+    this->updateWindowToolbar();
 }
 
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
+
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
 
     for (int i = 0; i < windows.size(); ++i) {
@@ -87,6 +95,33 @@ void MainWindow::updateWindowMenu()
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
         connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+        windowMapper->setMapping(action, windows.at(i));
+    }
+}
+
+void MainWindow::updateWindowToolbar()
+{
+    for (int i = this->mBarWindows->actions().length() - 1; i >= 0; i--) {
+        this->mBarWindows->removeAction(this->mBarWindows->actions().at(i));
+    }
+
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+
+    for (int i = 0; i < windows.size(); ++i) {
+        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+
+        QString text;
+        if (i < 9) {
+            text = tr("&%1 %2").arg(i + 1)
+                               .arg(child->userFriendlyCurrentFile());
+        } else {
+            text = tr("%1 %2").arg(i + 1)
+                              .arg(child->userFriendlyCurrentFile());
+        }
+
+        QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
+        action->setCheckable(true);
+        action->setChecked(child == activeMdiChild());
         windowMapper->setMapping(action, windows.at(i));
     }
 }
@@ -152,4 +187,9 @@ void MainWindow::setActiveSubWindow(QWidget *window)
     if (!window)
         return;
     mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+}
+
+void MainWindow::on_subWindowActivated(QMdiSubWindow *window)
+{
+    this->updateWindowToolbar();
 }
