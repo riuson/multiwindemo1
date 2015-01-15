@@ -44,6 +44,8 @@
 #include <QMainWindow>
 
 class MdiChild;
+class ISubWindow;
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
@@ -60,10 +62,12 @@ public:
     MainWindow();
 private slots:
     void newFile();
+    void newWindow();
 #endif
     void updateWindowMenu();
     void updateWindowToolbar();
     MdiChild *createMdiChild();
+    QWidget *createNewWindow();
 
     void setActiveSubWindow(QWidget *window);
     void on_subWindowActivated(QMdiSubWindow * window);
@@ -76,6 +80,7 @@ private:
 
     void writeSettings();
     MdiChild *activeMdiChild();
+    ISubWindow *activeSubWindow();
     QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;

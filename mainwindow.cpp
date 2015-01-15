@@ -42,6 +42,8 @@
 
 #include "mainwindow.h"
 #include "mdichild.h"
+#include "isubwindow.h"
+#include "windowexample.h"
 
 MainWindow::MainWindow()
 {
@@ -74,6 +76,14 @@ void MainWindow::newFile()
     this->updateWindowToolbar();
 }
 
+void MainWindow::newWindow()
+{
+    QWidget *child = createNewWindow();
+    child->show();
+
+    this->updateWindowToolbar();
+}
+
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
@@ -83,19 +93,32 @@ void MainWindow::updateWindowMenu()
     for (int i = 0; i < windows.size(); ++i) {
         MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
 
-        QString text;
-        if (i < 9) {
-            text = tr("&%1 %2").arg(i + 1)
-                               .arg(child->userFriendlyCurrentFile());
-        } else {
-            text = tr("%1 %2").arg(i + 1)
-                              .arg(child->userFriendlyCurrentFile());
+        if (child != NULL) {
+            QString text;
+            if (i < 9) {
+                text = tr("&%1 %2").arg(i + 1)
+                                   .arg(child->userFriendlyCurrentFile());
+            } else {
+                text = tr("%1 %2").arg(i + 1)
+                                  .arg(child->userFriendlyCurrentFile());
+            }
+            QAction *action  = windowMenu->addAction(text);
+            action->setCheckable(true);
+            action ->setChecked(child == activeMdiChild());
+            connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+            windowMapper->setMapping(action, windows.at(i));
         }
-        QAction *action  = windowMenu->addAction(text);
-        action->setCheckable(true);
-        action ->setChecked(child == activeMdiChild());
-        connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-        windowMapper->setMapping(action, windows.at(i));
+
+        ISubWindow *subWindow = qobject_cast<ISubWindow *>(windows.at(i)->widget());
+
+        if (subWindow != NULL) {
+            QString text = subWindow->windowTitle();
+            QAction *action  = windowMenu->addAction(text);
+            action->setCheckable(true);
+            action ->setChecked(subWindow == activeSubWindow());
+            connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+            windowMapper->setMapping(action, windows.at(i));
+        }
     }
 }
 
@@ -110,19 +133,31 @@ void MainWindow::updateWindowToolbar()
     for (int i = 0; i < windows.size(); ++i) {
         MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
 
-        QString text;
-        if (i < 9) {
-            text = tr("&%1 %2").arg(i + 1)
-                               .arg(child->userFriendlyCurrentFile());
-        } else {
-            text = tr("%1 %2").arg(i + 1)
-                              .arg(child->userFriendlyCurrentFile());
+        if (child != NULL) {
+            QString text;
+            if (i < 9) {
+                text = tr("&%1 %2").arg(i + 1)
+                                   .arg(child->userFriendlyCurrentFile());
+            } else {
+                text = tr("%1 %2").arg(i + 1)
+                                  .arg(child->userFriendlyCurrentFile());
+            }
+
+            QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
+            action->setCheckable(true);
+            action->setChecked(child == activeMdiChild());
+            windowMapper->setMapping(action, windows.at(i));
         }
 
-        QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
-        action->setCheckable(true);
-        action->setChecked(child == activeMdiChild());
-        windowMapper->setMapping(action, windows.at(i));
+        ISubWindow *subWindow = qobject_cast<ISubWindow *>(windows.at(i)->widget());
+
+        if (subWindow != NULL) {
+            QString text = subWindow->windowTitle();
+            QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
+            action->setCheckable(true);
+            action->setChecked(subWindow == activeSubWindow());
+            windowMapper->setMapping(action, windows.at(i));
+        }
     }
 }
 
@@ -133,25 +168,36 @@ MdiChild *MainWindow::createMdiChild()
     return child;
 }
 
+QWidget *MainWindow::createNewWindow()
+{
+    QWidget *child = new WindowExample(this);
+    mdiArea->addSubWindow(child);
+    return child;
+}
+
 void MainWindow::createActions()
 {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
-
 }
 
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
+
     fileMenu->addAction(newAct);
+
+    QAction *actionNewWindow = fileMenu->addAction(tr("&New Custom Window"));
+    actionNewWindow->setStatusTip(tr("Create a new custom window"));
+    connect(actionNewWindow, SIGNAL(triggered()), this, SLOT(newWindow()));
+
     QAction *action = fileMenu->addAction(tr("Switch layout direction"));
     connect(action, SIGNAL(triggered()), this, SLOT(switchLayoutDirection()));
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
-
 }
 
 
@@ -166,6 +212,13 @@ MdiChild *MainWindow::activeMdiChild()
 {
     if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
         return qobject_cast<MdiChild *>(activeSubWindow->widget());
+    return 0;
+}
+
+ISubWindow *MainWindow::activeSubWindow()
+{
+    if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
+        return qobject_cast<ISubWindow *>(activeSubWindow->widget());
     return 0;
 }
 
