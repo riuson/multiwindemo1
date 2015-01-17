@@ -43,7 +43,6 @@
 
 #include <QMainWindow>
 
-class MdiChild;
 class ISubWindow;
 
 QT_BEGIN_NAMESPACE
@@ -60,53 +59,25 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow();
+
 private slots:
-    void newFile();
     void newWindow();
-#endif
     void updateWindowMenu();
     void updateWindowToolbar();
-    MdiChild *createMdiChild();
-    QWidget *createNewWindow();
 
     void setActiveSubWindow(QWidget *window);
     void on_subWindowActivated(QMdiSubWindow * window);
 
 private:
-   void createActions();
     void createMenus();
     void createToolBars();
+    QWidget *createNewWindow();
 
-
-    void writeSettings();
-    MdiChild *activeMdiChild();
     ISubWindow *activeSubWindow();
-    QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;
     QMenu *fileMenu;
-    QMenu *editMenu;
     QMenu *windowMenu;
-    QMenu *helpMenu;
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
-    QAction *newAct;
-
-    QAction *exitAct;
-#ifndef QT_NO_CLIPBOARD
-
-#endif
-    QAction *closeAct;
-    QAction *closeAllAct;
-    QAction *tileAct;
-    QAction *cascadeAct;
-    QAction *nextAct;
-    QAction *previousAct;
-    QAction *separatorAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
-
     QToolBar *mBarWindows;
 };
-
-
+#endif

@@ -41,7 +41,6 @@
 #include <QtWidgets>
 
 #include "mainwindow.h"
-#include "mdichild.h"
 #include "isubwindow.h"
 #include "windowexample.h"
 
@@ -50,74 +49,43 @@ MainWindow::MainWindow()
     this->mBarWindows = new QToolBar("Linker ToolBar", this);
     this->addToolBar(Qt::BottomToolBarArea, this->mBarWindows);
 
-    mdiArea = new QMdiArea;
+    this->mdiArea = new QMdiArea;
 
-    setCentralWidget(mdiArea);
+    this->setCentralWidget(this->mdiArea);
 
     this->connect(this->mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(on_subWindowActivated(QMdiSubWindow*)));
 
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget*)),
-            this, SLOT(setActiveSubWindow(QWidget*)));
-    createActions();
-    createMenus();
+    this->connect(windowMapper, SIGNAL(mapped(QWidget*)), this, SLOT(setActiveSubWindow(QWidget*)));
+    this->createMenus();
 
-
-    setWindowTitle(tr("MDI"));
-    setUnifiedTitleAndToolBarOnMac(true);
-}
-
-void MainWindow::newFile()
-{
-    MdiChild *child = createMdiChild();
-    child->newFile();
-    child->show();
-
-    this->updateWindowToolbar();
+    this->setWindowTitle(tr("MDI"));
+    this->setUnifiedTitleAndToolBarOnMac(true);
 }
 
 void MainWindow::newWindow()
 {
     QWidget *child = createNewWindow();
     child->show();
-
     this->updateWindowToolbar();
 }
 
 void MainWindow::updateWindowMenu()
 {
-    windowMenu->clear();
+    this->windowMenu->clear();
 
-    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    QList<QMdiSubWindow *> windows = this->mdiArea->subWindowList();
 
     for (int i = 0; i < windows.size(); ++i) {
-        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-
-        if (child != NULL) {
-            QString text;
-            if (i < 9) {
-                text = tr("&%1 %2").arg(i + 1)
-                                   .arg(child->userFriendlyCurrentFile());
-            } else {
-                text = tr("%1 %2").arg(i + 1)
-                                  .arg(child->userFriendlyCurrentFile());
-            }
-            QAction *action  = windowMenu->addAction(text);
-            action->setCheckable(true);
-            action ->setChecked(child == activeMdiChild());
-            connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-            windowMapper->setMapping(action, windows.at(i));
-        }
-
         ISubWindow *subWindow = qobject_cast<ISubWindow *>(windows.at(i)->widget());
 
         if (subWindow != NULL) {
             QString text = subWindow->windowTitle();
-            QAction *action  = windowMenu->addAction(text);
+            QAction *action  = this->windowMenu->addAction(text);
             action->setCheckable(true);
             action ->setChecked(subWindow == activeSubWindow());
-            connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-            windowMapper->setMapping(action, windows.at(i));
+            connect(action, SIGNAL(triggered()), this->windowMapper, SLOT(map()));
+            this->windowMapper->setMapping(action, windows.at(i));
         }
     }
 }
@@ -128,118 +96,54 @@ void MainWindow::updateWindowToolbar()
         this->mBarWindows->removeAction(this->mBarWindows->actions().at(i));
     }
 
-    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    QList<QMdiSubWindow *> windows = this->mdiArea->subWindowList();
 
     for (int i = 0; i < windows.size(); ++i) {
-        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-
-        if (child != NULL) {
-            QString text;
-            if (i < 9) {
-                text = tr("&%1 %2").arg(i + 1)
-                                   .arg(child->userFriendlyCurrentFile());
-            } else {
-                text = tr("%1 %2").arg(i + 1)
-                                  .arg(child->userFriendlyCurrentFile());
-            }
-
-            QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
-            action->setCheckable(true);
-            action->setChecked(child == activeMdiChild());
-            windowMapper->setMapping(action, windows.at(i));
-        }
-
         ISubWindow *subWindow = qobject_cast<ISubWindow *>(windows.at(i)->widget());
 
         if (subWindow != NULL) {
             QString text = subWindow->windowTitle();
-            QAction *action = this->mBarWindows->addAction(text, windowMapper, SLOT(map()));
+            QAction *action = this->mBarWindows->addAction(text, this->windowMapper, SLOT(map()));
             action->setCheckable(true);
             action->setChecked(subWindow == activeSubWindow());
-            windowMapper->setMapping(action, windows.at(i));
+            this->windowMapper->setMapping(action, windows.at(i));
         }
     }
-}
-
-MdiChild *MainWindow::createMdiChild()
-{
-    MdiChild *child = new MdiChild;
-    mdiArea->addSubWindow(child);
-    return child;
 }
 
 QWidget *MainWindow::createNewWindow()
 {
     QWidget *child = new WindowExample(this);
-    mdiArea->addSubWindow(child);
+    this->mdiArea->addSubWindow(child);
     return child;
-}
-
-void MainWindow::createActions()
-{
-    newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
-    newAct->setShortcuts(QKeySequence::New);
-    newAct->setStatusTip(tr("Create a new file"));
-    connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 }
 
 void MainWindow::createMenus()
 {
-    fileMenu = menuBar()->addMenu(tr("&File"));
+    this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 
-    fileMenu->addAction(newAct);
-
-    QAction *actionNewWindow = fileMenu->addAction(tr("&New Custom Window"));
+    QAction *actionNewWindow = this->fileMenu->addAction(tr("&New Custom Window"));
     actionNewWindow->setStatusTip(tr("Create a new custom window"));
-    connect(actionNewWindow, SIGNAL(triggered()), this, SLOT(newWindow()));
+    this->connect(actionNewWindow, SIGNAL(triggered()), SLOT(newWindow()));
 
-    QAction *action = fileMenu->addAction(tr("Switch layout direction"));
-    connect(action, SIGNAL(triggered()), this, SLOT(switchLayoutDirection()));
-    windowMenu = menuBar()->addMenu(tr("&Window"));
-    updateWindowMenu();
-    connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
-}
-
-
-void MainWindow::writeSettings()
-{
-    QSettings settings("QtProject", "MDI Example");
-    settings.setValue("pos", pos());
-    settings.setValue("size", size());
-}
-
-MdiChild *MainWindow::activeMdiChild()
-{
-    if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
-        return qobject_cast<MdiChild *>(activeSubWindow->widget());
-    return 0;
+    this->windowMenu = this->menuBar()->addMenu(tr("&Window"));
+    this->updateWindowMenu();
+    this->connect(this->windowMenu, SIGNAL(aboutToShow()), SLOT(updateWindowMenu()));
 }
 
 ISubWindow *MainWindow::activeSubWindow()
 {
-    if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
+    if (QMdiSubWindow *activeSubWindow = this->mdiArea->activeSubWindow())
         return qobject_cast<ISubWindow *>(activeSubWindow->widget());
     return 0;
 }
-
-QMdiSubWindow *MainWindow::findMdiChild(const QString &fileName)
-{
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-
-    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
-        MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
-        if (mdiChild->currentFile() == canonicalFilePath)
-            return window;
-    }
-    return 0;
-}
-
 
 void MainWindow::setActiveSubWindow(QWidget *window)
 {
     if (!window)
         return;
-    mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+
+    this->mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
 }
 
 void MainWindow::on_subWindowActivated(QMdiSubWindow *window)

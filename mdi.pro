@@ -1,12 +1,10 @@
 QT += widgets
 
 HEADERS       = mainwindow.h \
-                mdichild.h \
     windowexample.h \
     isubwindow.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
-                mdichild.cpp \
     windowexample.cpp
 RESOURCES     = mdi.qrc
 
