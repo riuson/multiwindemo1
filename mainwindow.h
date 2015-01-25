@@ -67,6 +67,7 @@ private slots:
 
     void setActiveSubWindow(QWidget *window);
     void on_subWindowActivated(QMdiSubWindow * window);
+    void on_windowCreated(QWidget *window);
 
 private:
     void createMenus();

@@ -21,6 +21,12 @@ public:
 
 private:
     Ui::WindowExample *ui;
+
+private slots:
+    void on_pushButtonOpenNewDialog_clicked();
+
+signals:
+    void windowCreated(QWidget *widget);
 };
 
 #endif // WINDOWEXAMPLE_H

@@ -17,3 +17,9 @@ QString WindowExample::windowTitle() const
 {
     return QWidget::windowTitle();
 }
+
+void WindowExample::on_pushButtonOpenNewDialog_clicked()
+{
+    WindowExample *w = new WindowExample();
+    emit this->windowCreated(w);
+}
