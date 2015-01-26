@@ -6,6 +6,7 @@ WindowExample::WindowExample(QWidget *parent) :
     ui(new Ui::WindowExample)
 {
     ui->setupUi(this);
+    this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 WindowExample::~WindowExample()
@@ -27,4 +28,9 @@ void WindowExample::on_pushButtonOpenNewDialog_clicked()
 {
     WindowExample *w = new WindowExample();
     emit this->windowCreated(w);
+}
+
+void WindowExample::on_pushButtonClose_clicked()
+{
+    emit this->windowClosed(this);
 }

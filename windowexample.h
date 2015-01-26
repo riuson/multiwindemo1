@@ -25,6 +25,7 @@ private:
 
 private slots:
     void on_pushButtonOpenNewDialog_clicked();
+    void on_pushButtonClose_clicked();
 
 signals:
     void windowCreated(ISubWindow *widget);

@@ -66,7 +66,6 @@ MainWindow::MainWindow()
 void MainWindow::newWindow()
 {
     QWidget *child = createNewWindow();
-    child->show();
     this->updateWindowToolbar();
 }
 
@@ -113,12 +112,18 @@ void MainWindow::updateWindowToolbar()
 
 QWidget *MainWindow::createNewWindow()
 {
-    QWidget *child = new WindowExample(this);
-    this->mdiArea->addSubWindow(child);
-
-    this->connect(child, SIGNAL(windowCreated(ISubWindow*)), SLOT(on_windowCreated(ISubWindow*)));
-
+    WindowExample *child = new WindowExample(this);
+    this->setupSubWindow(child);
     return child;
+}
+
+void MainWindow::setupSubWindow(ISubWindow *window)
+{
+    window->widget()->setParent(this);
+    this->mdiArea->addSubWindow(window->widget());
+    window->widget()->show();
+    this->connect(dynamic_cast<QObject*>(window), SIGNAL(windowCreated(ISubWindow*)), SLOT(on_windowCreated(ISubWindow*)));
+    this->connect(dynamic_cast<QObject*>(window), SIGNAL(windowClosed(ISubWindow*)), SLOT(on_windowClosed(ISubWindow*)));
 }
 
 void MainWindow::createMenus()
@@ -156,13 +161,22 @@ void MainWindow::on_subWindowActivated(QMdiSubWindow *window)
 
 void MainWindow::on_windowCreated(ISubWindow *window)
 {
-    window->widget()->setParent(this);
-    this->mdiArea->addSubWindow(window->widget());
-    window->widget()->show();
-    this->connect(dynamic_cast<QObject*>(window), SIGNAL(windowCreated(ISubWindow*)), SLOT(on_windowCreated(ISubWindow*)));
+    this->setupSubWindow(window);
 }
 
 void MainWindow::on_windowClosed(ISubWindow *window)
 {
+    QMdiSubWindow *targetSubWindow = NULL;
 
+    QList<QMdiSubWindow*> list = this->mdiArea->subWindowList();
+    for (int i = 0; i < list.length(); i++) {
+        if (list.at(i)->widget() == window->widget()) {
+            targetSubWindow = list.at(i);
+        }
+    }
+
+    Q_ASSERT(targetSubWindow != NULL);
+
+    this->mdiArea->removeSubWindow(targetSubWindow);
+    window->widget()->close();
 }

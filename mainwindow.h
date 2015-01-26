@@ -74,6 +74,7 @@ private:
     void createMenus();
     void createToolBars();
     QWidget *createNewWindow();
+    void setupSubWindow(ISubWindow *window);
 
     ISubWindow *activeSubWindow();
     QMdiArea *mdiArea;
