@@ -13,6 +13,11 @@ WindowExample::~WindowExample()
     delete ui;
 }
 
+QWidget *WindowExample::widget()
+{
+    return this;
+}
+
 QString WindowExample::windowTitle() const
 {
     return QWidget::windowTitle();

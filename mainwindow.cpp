@@ -116,7 +116,7 @@ QWidget *MainWindow::createNewWindow()
     QWidget *child = new WindowExample(this);
     this->mdiArea->addSubWindow(child);
 
-    this->connect(child, SIGNAL(windowCreated(QWidget*)), SLOT(on_windowCreated(QWidget*)));
+    this->connect(child, SIGNAL(windowCreated(ISubWindow*)), SLOT(on_windowCreated(ISubWindow*)));
 
     return child;
 }
@@ -154,10 +154,15 @@ void MainWindow::on_subWindowActivated(QMdiSubWindow *window)
     this->updateWindowToolbar();
 }
 
-void MainWindow::on_windowCreated(QWidget *window)
+void MainWindow::on_windowCreated(ISubWindow *window)
 {
-    window->setParent(this);
-    this->mdiArea->addSubWindow(window);
-    window->show();
-    this->connect(window, SIGNAL(windowCreated(QWidget*)), SLOT(on_windowCreated(QWidget*)));
+    window->widget()->setParent(this);
+    this->mdiArea->addSubWindow(window->widget());
+    window->widget()->show();
+    this->connect(dynamic_cast<QObject*>(window), SIGNAL(windowCreated(ISubWindow*)), SLOT(on_windowCreated(ISubWindow*)));
+}
+
+void MainWindow::on_windowClosed(ISubWindow *window)
+{
+
 }

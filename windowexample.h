@@ -17,6 +17,7 @@ public:
     explicit WindowExample(QWidget *parent = 0);
     ~WindowExample();
 
+    QWidget *widget();
     QString windowTitle() const;
 
 private:
@@ -26,7 +27,8 @@ private slots:
     void on_pushButtonOpenNewDialog_clicked();
 
 signals:
-    void windowCreated(QWidget *widget);
+    void windowCreated(ISubWindow *widget);
+    void windowClosed(ISubWindow *widget);
 };
 
 #endif // WINDOWEXAMPLE_H
